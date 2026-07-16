@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Castle Aegis — CTF Training Ground</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">⚔️ Castle Aegis</div>
+  <div class="nav-links">
+    <a href="/">Map</a>
+    <a href="/scoreboard.html">Scoreboard</a>
+    <span id="nav-user" class="nav-user hidden"></span>
+    <button id="nav-login-btn" class="btn-ghost" onclick="openModal('login-modal')">Enter Castle</button>
+    <button id="nav-logout-btn" class="btn-ghost hidden" onclick="logout()">Leave</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-fog"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">⚔ Ethical Hacking Training Ground ⚔</p>
+    <h1 class="hero-title">Castle<br/><span class="accent">Aegis</span></h1>
+    <p class="hero-sub">
+      Nine towers. Nine vulnerabilities. One castle to breach.<br/>
+      Train your blade on SQL, IDOR, broken access, and more.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="openModal('register-modal')">Begin Your Quest</button>
+      <a href="#challenges" class="btn-ghost">View Challenges</a>
+    </div>
+  </div>
+  <div class="castle-silhouette">🏰</div>
+</header>
+
+<section class="story-banner">
+  <div class="scroll-paper">
+    <p class="scroll-text">
+      <em>"Castle Aegis holds dark secrets behind its walls. The King's scrolls, the gate schedules,
+      the royal treasury — all protected by guards who trust too easily.
+      You are an apprentice infiltrator. Use your knowledge of web vulnerabilities
+      to breach each tower, capture the flags within, and prove your worth."</em>
+    </p>
+  </div>
+</section>
+
+<section class="challenges" id="challenges">
+  <h2 class="section-title">⚔ The Nine Towers ⚔</h2>
+  <p class="section-sub">Each tower guards a different secret. Each requires a different weapon.</p>
+
+  <div class="challenge-grid">
+
+    <div class="challenge-card" onclick="goChallenge(1)">
+      <div class="card-tower">🗼</div>
+      <div class="card-num">Tower I</div>
+      <h3>The Scroll Vault</h3>
+      <p>The castle stores personal scrolls for every inhabitant. Can you read scrolls that aren't yours?</p>
+      <div class="card-tags"><span class="tag">IDOR</span><span class="tag points">100 pts</span></div>
+      <div class="card-footer"><span class="difficulty easy">Novice</span><span class="card-arrow">→</span></div>
+    </div>
+
+    <div class="challenge-card" onclick="goChallenge(2)">
+      <div class="card-tower">🚪</div>
+      <div class="card-num">Tower II</div>
+      <h3>The Gate Oracle</h3>
+      <p>The oracle knows when every gate opens. It answers questions — but perhaps more than it should.</p>
+      <div class="card-tags"><span class="tag">SQL Injection</span><span class="tag points">150 pts</span></div>
+      <div class="card-footer"><span class="difficulty medium">Apprentice</span><span class="card-arrow">→</span></div>
+    </div>
+
+    <div class="challenge-card" onclick="goChallenge(3)">
+      <div class="card-tower">👑</div>
+      <div class="card-num">Tower III</div>
+      <h3>The Throne Room</h3>
+      <p>Only castle staff may enter the throne room. But who decides your role — you, or the castle?</p>
+      <div class="card-tags"><span class="tag">Broken Access Control</span><span class="tag points">200 pts</span></div>
+      <div class="card-footer"><span class="difficulty medium">Apprentice</span><span class="card-arrow">→</span></div>
+    </div>
+
+    <div class="challenge-card" onclick="goChallenge(4)">
+      <div class="card-tower">🕵️</div>
+      <div class="card-num">Tower IV</div>
+      <h3>The Hidden Passage</h3>
+      <p>Rumor has it the castle builders left a secret passage open. Can you find the hidden endpoint?</p>
+      <div class="card-tags"><span class="tag">Security by Obscurity</span><span class="tag points">150 pts</span></div>
+      <div class="card-footer"><span class="difficulty easy">Novice</span><span class="card-arrow">→</span></div>
+    </div>
+
+    <div class="challenge-card" onclick="goChallenge(5)">
+      <div class="card-tower">⚗️</div>
+      <div class="card-num">Tower V</div>
+      <h3>The Alchemist's Lab</h3>
+      <p>The profile update spell accepts ingredients from you directly — even ones you shouldn't touch.</p>
+      <div class="card-tags"><span class="tag">Mass Assignment</span><span class="tag points">200 pts</span></div>
+      <div class="card-footer"><span class="difficulty medium">Apprentice</span><span class="card-arrow">→</span></div>
+    </div>
+
+    <div class="challenge-card" onclick="goChallenge(6)">
+      <div class="card-tower">📜</div>
+      <div class="card-num">Tower VI</div>
+      <h3>The Announcement Board</h3>
+      <p>The castle board shows messages from all inhabitants. Leave a message — one that executes.</p>
+      <div class="card-tags"><span class="tag">Stored XSS</span><span class="tag points">200 pts</span></div>
+      <div class="card-footer"><span class="difficulty medium">Apprentice</span><span class="card-arrow">→</span></div>
+    </div>
+
+    <div class="challenge-card" onclick="goChallenge(7)">
+      <div class="card-tower">🔮</div>
+      <div class="card-num">Tower VII</div>
+      <h3>The Royal Seal</h3>
+      <p>Every visitor is given a magical seal upon entering. Can you forge a king's seal?</p>
+      <div class="card-tags"><span class="tag">Weak JWT</span><span class="tag points">250 pts</span></div>
+      <div class="card-footer"><span class="difficulty hard">Knight</span><span class="card-arrow">→</span></div>
+    </div>
+
+    <div class="challenge-card" onclick="goChallenge(8)">
+      <div class="card-tower">📬</div>
+      <div class="card-num">Tower VIII</div>
+      <h3>The Letter Room</h3>
+      <p>The castle delivers letters by filename. What happens when you ask for a letter outside the mail room?</p>
+      <div class="card-tags"><span class="tag">Path Traversal</span><span class="tag points">200 pts</span></div>
+      <div class="card-footer"><span class="difficulty hard">Knight</span><span class="card-arrow">→</span></div>
+    </div>
+
+    <div class="challenge-card" onclick="goChallenge(9)">
+      <div class="card-tower">🔐</div>
+      <div class="card-num">Tower IX</div>
+      <h3>The Treasury Vault</h3>
+      <p>A 4-digit pin seals the treasury. The guards never lock out failed attempts. Can you crack it?</p>
+      <div class="card-tags"><span class="tag">Brute Force</span><span class="tag points">150 pts</span></div>
+      <div class="card-footer"><span class="difficulty hard">Knight</span><span class="card-arrow">→</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section class="flag-submit-bar">
+  <div class="flag-inner">
+    <span class="flag-label">🚩 Submit a Flag</span>
+    <input type="text" id="global-flag-input" placeholder="FLAG{...}" class="flag-input" />
+    <button class="btn-primary" onclick="submitFlag()">Claim Victory</button>
+    <span id="flag-result" class="flag-result"></span>
+  </div>
+</section>
+
+<div id="login-modal" class="modal hidden">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    <h2>Enter the Castle</h2>
+    <p class="modal-sub">Login with your adventurer credentials</p>
+    <input type="text" id="login-user" placeholder="Username" class="modal-input"/>
+    <input type="password" id="login-pass" placeholder="Password" class="modal-input"/>
+    <button class="btn-primary full" onclick="login()">Login</button>
+    <p class="modal-switch">No account? <a href="#" onclick="switchModal('login-modal','register-modal')">Register here</a></p>
+    <div id="login-msg" class="modal-msg"></div>
+  </div>
+</div>
+
+<div id="register-modal" class="modal hidden">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('register-modal')">✕</button>
+    <h2>Join the Quest</h2>
+    <p class="modal-sub">Create your adventurer identity</p>
+    <input type="text" id="reg-user" placeholder="Username" class="modal-input"/>
+    <input type="password" id="reg-pass" placeholder="Password" class="modal-input"/>
+    <button class="btn-primary full" onclick="register()">Register</button>
+    <p class="modal-switch">Have an account? <a href="#" onclick="switchModal('register-modal','login-modal')">Login</a></p>
+    <div id="reg-msg" class="modal-msg"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>⚔️ Castle Aegis CTF — For Ethical Hacking Education Only ⚔️</p>
+  <p class="footer-sub">All vulnerabilities are intentional. Do not use these techniques on systems you don't own.</p>
+</footer>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

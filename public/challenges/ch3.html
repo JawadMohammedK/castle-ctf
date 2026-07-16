@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tower III — The Throne Room | Castle Aegis</title>
+  <link rel="stylesheet" href="/css/main.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">⚔️ Castle Aegis</div>
+  <div class="nav-links">
+    <a href="/">← Back to Map</a>
+    <span id="nav-user" class="nav-user hidden"></span>
+    <button id="nav-login-btn" class="btn-ghost" onclick="openModal('login-modal')">Enter Castle</button>
+    <button id="nav-logout-btn" class="btn-ghost hidden" onclick="logout()">Leave</button>
+  </div>
+</nav>
+
+<main class="challenge-page">
+  <div class="ch-header">
+    <a href="/" class="back-link">← CASTLE MAP</a>
+    <div class="ch-tower">👑</div>
+    <div class="ch-num">TOWER III</div>
+    <h1 class="ch-title">The Throne Room</h1>
+    <div class="ch-tags">
+      <span class="tag">Broken Access Control</span>
+      <span class="tag points">200 pts</span>
+      <span class="difficulty medium">Apprentice</span>
+    </div>
+  </div>
+
+  <div class="ch-story">
+    "The throne room is restricted to castle staff. The guard at the door checks your
+    insignia — a small badge you wear on your cloak. But here is the problem: you made
+    the badge yourself. The guard never checks with the castle registry. He just reads
+    what the badge says and believes it."
+  </div>
+
+  <div class="ch-section">
+    <h3>📖 What is Broken Access Control?</h3>
+    <p style="font-size:0.9rem; color:var(--text); line-height:1.7; margin-bottom:1rem;">
+      <strong style="color:var(--gold)">Broken Access Control</strong> is the #1 vulnerability
+      in OWASP Top 10 2021. It occurs when access restrictions are enforced using data that the
+      client controls rather than the server. Here the server trusts a custom HTTP header
+      <code>X-Role</code> that you send — meaning you can claim any role you want.
+    </p>
+    <div class="hint-box">
+      <span class="hint-icon">⚔</span>
+      <span class="hint-text">
+        The server checks: <code>if (req.headers['x-role'] !== 'admin')</code> → deny<br/><br/>
+        You control your request headers. Try adding <code>X-Role: admin</code> to access
+        Room 1 (Throne Room). Try <code>X-Role: mage</code> to access Room 3 (Mage Tower).
+      </span>
+    </div>
+  </div>
+
+  <div class="ch-section">
+    <h3>🗺 Step-by-Step</h3>
+    <ol class="steps">
+      <li>Try accessing Room 1 with role set to <code>peasant</code> — you will be denied.</li>
+      <li>Change the role to <code>admin</code> and try Room 1 again.</li>
+      <li>Change the role to <code>mage</code> and access Room 3.</li>
+      <li>Both rooms contain flags inside their content field.</li>
+    </ol>
+  </div>
+
+  <div class="ch-section">
+    <h3>⚡ Room Access Terminal</h3>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="term-dot r"></div>
+        <div class="term-dot y"></div>
+        <div class="term-dot g"></div>
+        <span class="terminal-label">GET /api/room/:id  with X-Role header</span>
+      </div>
+      <div class="terminal-body">
+        <div class="term-row">
+          <span class="term-label">ROOM ID</span>
+          <select class="term-select" id="room-id">
+            <option value="1">1 — Throne Room (admin only)</option>
+            <option value="2">2 — Guard Barracks (guard only)</option>
+            <option value="3">3 — Mage Tower (mage only)</option>
+            <option value="4">4 — Dungeon (public)</option>
+          </select>
+        </div>
+        <div class="term-row">
+          <span class="term-label">X-ROLE</span>
+          <input class="term-input" id="role-header" value="peasant" style="max-width:180px"/>
+          <button class="term-btn" onclick="accessRoom()">ENTER ROOM</button>
+        </div>
+        <div style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-dim);">
+          Try roles:
+          <button class="term-btn" style="margin:0.25rem; font-size:0.7rem;" onclick="setRole('admin')">admin</button>
+          <button class="term-btn" style="margin:0.25rem; font-size:0.7rem;" onclick="setRole('mage')">mage</button>
+          <button class="term-btn" style="margin:0.25rem; font-size:0.7rem;" onclick="setRole('guard')">guard</button>
+          <button class="term-btn" style="margin:0.25rem; font-size:0.7rem;" onclick="setRole('peasant')">peasant</button>
+        </div>
+        <div class="term-response">
+          <pre id="room-response">// Response will appear here...</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ch-section">
+    <h3>💡 The Fix</h3>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="term-dot g"></div><span class="terminal-label">Server-side role from session</span></div>
+      <div class="terminal-body">
+        <pre style="color:#7fff7f; font-size:0.8rem; line-height:1.6;">
+// ❌ VULNERABLE — trusts client-supplied header
+const role = req.headers['x-role'];
+if (role !== 'admin') return res.status(403).json({ error: 'Denied' });
+
+// ✅ SECURE — role comes from server-side session only
+const role = req.session.user.role;
+if (role !== 'admin') return res.status(403).json({ error: 'Denied' });</pre>
+      </div>
+    </div>
+  </div>
+</main>
+
+<section class="flag-submit-bar">
+  <div class="flag-inner">
+    <span class="flag-label">🚩 Submit Flag</span>
+    <input type="text" id="global-flag-input" placeholder="FLAG{...}" class="flag-input"/>
+    <button class="btn-primary" onclick="submitFlag()">Claim Victory</button>
+    <span id="flag-result" class="flag-result"></span>
+  </div>
+</section>
+
+<div id="login-modal" class="modal hidden">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    <h2>Enter the Castle</h2>
+    <input type="text" id="login-user" placeholder="Username" class="modal-input"/>
+    <input type="password" id="login-pass" placeholder="Password" class="modal-input"/>
+    <button class="btn-primary full" onclick="login()">Login</button>
+    <div id="login-msg" class="modal-msg"></div>
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+<script>
+function setRole(r) { document.getElementById('role-header').value = r; }
+
+async function accessRoom() {
+  const id   = document.getElementById('room-id').value;
+  const role = document.getElementById('role-header').value;
+  const pre  = document.getElementById('room-response');
+  pre.textContent = '// Attempting entry...';
+  try {
+    const res  = await fetch(`/api/room/${id}`, { headers: { 'X-Role': role } });
+    const data = await res.json();
+    pre.textContent = JSON.stringify(data, null, 2);
+    const text  = JSON.stringify(data);
+    const match = text.match(/FLAG\{[^}]+\}/g);
+    if (match) document.getElementById('global-flag-input').value = match[0];
+  } catch (e) {
+    pre.textContent = '// Error: ' + e.message;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scoreboard | Castle Aegis</title>
+  <link rel="stylesheet" href="/css/main.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">⚔️ Castle Aegis</div>
+  <div class="nav-links">
+    <a href="/">← Castle Map</a>
+    <span id="nav-user" class="nav-user hidden"></span>
+    <button id="nav-login-btn" class="btn-ghost" onclick="openModal('login-modal')">Enter Castle</button>
+    <button id="nav-logout-btn" class="btn-ghost hidden" onclick="logout()">Leave</button>
+  </div>
+</nav>
+
+<main class="scoreboard-page">
+  <h1 class="section-title" style="margin-bottom:0.5rem;">🏆 Hall of Glory</h1>
+  <p class="section-sub" style="margin-bottom:2.5rem;">The realm's greatest infiltrators</p>
+
+  <table class="scoreboard-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Adventurer</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="score-body">
+      <tr>
+        <td colspan="3" style="color:var(--text-dim); text-align:center; padding:2rem;">
+          Loading...
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</main>
+
+<div id="login-modal" class="modal hidden">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    <h2>Enter the Castle</h2>
+    <input type="text" id="login-user" placeholder="Username" class="modal-input"/>
+    <input type="password" id="login-pass" placeholder="Password" class="modal-input"/>
+    <button class="btn-primary full" onclick="login()">Login</button>
+    <div id="login-msg" class="modal-msg"></div>
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+<script>
+const medals = ['🥇', '🥈', '🥉'];
+
+async function loadScores() {
+  try {
+    const res  = await fetch('/api/scoreboard');
+    const data = await res.json();
+    const tbody = document.getElementById('score-body');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text-dim); text-align:center; padding:2rem;">No adventurers yet. Be the first!</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map((p, i) => `
+      <tr>
+        <td><span class="rank-medal">${medals[i] || (i + 1)}</span></td>
+        <td>${p.username}</td>
+        <td style="color:var(--gold); font-weight:bold;">${p.score} pts</td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    document.getElementById('score-body').innerHTML =
+      '<tr><td colspan="3" style="color:var(--red-light); text-align:center; padding:2rem;">Could not load scores.</td></tr>';
+  }
+}
+
+loadScores();
+setInterval(loadScores, 10000);
+</script>
+</body>
+</html>

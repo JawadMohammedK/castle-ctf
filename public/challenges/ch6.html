@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tower VI — The Announcement Board | Castle Aegis</title>
+  <link rel="stylesheet" href="/css/main.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">⚔️ Castle Aegis</div>
+  <div class="nav-links">
+    <a href="/">← Back to Map</a>
+    <span id="nav-user" class="nav-user hidden"></span>
+    <button id="nav-login-btn" class="btn-ghost" onclick="openModal('login-modal')">Enter Castle</button>
+    <button id="nav-logout-btn" class="btn-ghost hidden" onclick="logout()">Leave</button>
+  </div>
+</nav>
+
+<main class="challenge-page">
+  <div class="ch-header">
+    <a href="/" class="back-link">← CASTLE MAP</a>
+    <div class="ch-tower">📜</div>
+    <div class="ch-num">TOWER VI</div>
+    <h1 class="ch-title">The Announcement Board</h1>
+    <div class="ch-tags">
+      <span class="tag">Stored XSS</span>
+      <span class="tag">Cross-Site Scripting</span>
+      <span class="tag points">200 pts</span>
+      <span class="difficulty medium">Apprentice</span>
+    </div>
+  </div>
+
+  <div class="ch-story">
+    "The castle board lets all inhabitants post messages for others to read. The scribe
+    copies messages exactly as written — with no inspection. What if your message contained
+    not words, but a spell that executes the moment any reader's eyes pass over it?"
+  </div>
+
+  <div class="ch-section">
+    <h3>📖 What is Stored XSS?</h3>
+    <p style="font-size:0.9rem; color:var(--text); line-height:1.7; margin-bottom:1rem;">
+      <strong style="color:var(--gold)">Stored Cross-Site Scripting (XSS)</strong> happens when
+      malicious JavaScript is saved to the database and later rendered unsanitized in another
+      user's browser. Unlike reflected XSS, stored XSS persists — every visitor who loads
+      the page executes the attacker's script automatically.
+    </p>
+    <div class="hint-box">
+      <span class="hint-icon">⚔</span>
+      <span class="hint-text">
+        Post a message containing: <code>&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code><br/><br/>
+        Then click Load Board. The script executes in your browser showing your session cookie.
+        In a real attack this cookie would be sent silently to the attacker's server.
+        The flag appears once the board detects your payload executed.
+      </span>
+    </div>
+  </div>
+
+  <div class="ch-section">
+    <h3>🗺 Step-by-Step</h3>
+    <ol class="steps">
+      <li>Type a normal message first to see how the board works.</li>
+      <li>Click Load Board to see messages rendered on the page.</li>
+      <li>Now use the XSS payload button to post a script tag as your message.</li>
+      <li>Click Load Board again — your script executes and the flag appears.</li>
+    </ol>
+  </div>
+
+  <div class="ch-section">
+    <h3>⚡ Post to the Board</h3>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="term-dot r"></div>
+        <div class="term-dot y"></div>
+        <div class="term-dot g"></div>
+        <span class="terminal-label">POST /api/announce</span>
+      </div>
+      <div class="terminal-body">
+        <div class="term-row">
+          <span class="term-label">AUTHOR</span>
+          <input class="term-input" id="ann-author" value="Anonymous"/>
+        </div>
+        <div class="term-row">
+          <span class="term-label">MESSAGE</span>
+          <input class="term-input" id="ann-msg" value="Hello castle!" style="min-width:280px"/>
+        </div>
+        <div style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-dim);">
+          XSS payloads:
+          <button class="term-btn" style="margin:0.25rem; font-size:0.7rem;" onclick="setMsg('<script>alert(document.cookie)<\/script>')">Cookie steal</button>
+          <button class="term-btn" style="margin:0.25rem; font-size:0.7rem;" onclick="setMsg('<img src=x onerror=alert(1)>')">img onerror</button>
+        </div>
+        <button class="term-btn" style="margin-top:0.75rem;" onclick="postAnn()">POST MESSAGE</button>
+        <div class="term-response">
+          <pre id="ann-post-resp">// Post response...</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ch-section">
+    <h3>📋 The Board (renders HTML — intentionally unsafe)</h3>
+    <div style="background:#080808; border:1px solid var(--border); padding:1rem; min-height:100px;" id="board-render">
+      <span style="color:var(--text-dim); font-size:0.8rem;">Click Load Board to see messages...</span>
+    </div>
+    <button class="term-btn" style="margin-top:0.75rem;" onclick="loadBoard()">LOAD BOARD</button>
+    <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0.5rem;">
+      ⚠ This board renders raw HTML — that is the vulnerability.
+    </p>
+  </div>
+
+  <div class="ch-section">
+    <h3>💡 The Fix</h3>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="term-dot g"></div><span class="terminal-label">Escape output</span></div>
+      <div class="terminal-body">
+        <pre style="color:#7fff7f; font-size:0.8rem; line-height:1.6;">
+// ❌ VULNERABLE — renders raw HTML from database
+div.innerHTML = userMessage;
+
+// ✅ SECURE — treats content as plain text, not HTML
+div.textContent = userMessage;
+
+// ✅ ALSO SECURE — sanitize before rendering
+const clean = DOMPurify.sanitize(userMessage);
+div.innerHTML = clean;</pre>
+      </div>
+    </div>
+  </div>
+</main>
+
+<section class="flag-submit-bar">
+  <div class="flag-inner">
+    <span class="flag-label">🚩 Submit Flag</span>
+    <input type="text" id="global-flag-input" placeholder="FLAG{...}" class="flag-input"/>
+    <button class="btn-primary" onclick="submitFlag()">Claim Victory</button>
+    <span id="flag-result" class="flag-result"></span>
+  </div>
+</section>
+
+<div id="login-modal" class="modal hidden">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    <h2>Enter the Castle</h2>
+    <input type="text" id="login-user" placeholder="Username" class="modal-input"/>
+    <input type="password" id="login-pass" placeholder="Password" class="modal-input"/>
+    <button class="btn-primary full" onclick="login()">Login</button>
+    <div id="login-msg" class="modal-msg"></div>
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+<script>
+function setMsg(m) { document.getElementById('ann-msg').value = m; }
+
+async function postAnn() {
+  const author  = document.getElementById('ann-author').value;
+  const message = document.getElementById('ann-msg').value;
+  const pre     = document.getElementById('ann-post-resp');
+  try {
+    const res  = await fetch('/api/announce', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ author, message })
+    });
+    const data = await res.json();
+    pre.textContent = JSON.stringify(data, null, 2);
+  } catch (e) {
+    pre.textContent = '// Error: ' + e.message;
+  }
+}
+
+async function loadBoard() {
+  const res   = await fetch('/api/announcements');
+  const data  = await res.json();
+  const board = document.getElementById('board-render');
+  board.innerHTML = '';
+  data.forEach(a => {
+    const div = document.createElement('div');
+    div.style.cssText = 'border-bottom:1px solid #222; padding:0.75rem 0; font-size:0.85rem;';
+    // innerHTML is intentionally unsafe here — this IS the vulnerability
+    div.innerHTML = `<span style="color:var(--gold); font-family:var(--mono); font-size:0.7rem;">${a.author}</span><br/>${a.message}`;
+    board.appendChild(div);
+    // Detect XSS payload and show flag
+    if (a.message.includes('<script') || a.message.includes('onerror')) {
+      const flagDiv = document.createElement('div');
+      flagDiv.style.cssText = 'color:#27ae60; font-family:var(--mono); font-size:0.75rem; margin-top:0.5rem; padding:0.5rem; border:1px solid #1e6b3a;';
+      flagDiv.textContent = '🏴 XSS payload detected in board! FLAG{stored_xss_castle_board_pwned}';
+      board.appendChild(flagDiv);
+      document.getElementById('global-flag-input').value = 'FLAG{stored_xss_castle_board_pwned}';
+    }
+  });
+}
+</script>
+</body>
+</html>

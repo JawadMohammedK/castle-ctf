@@ -1,0 +1,7 @@
+Welcome, traveler, to Castle Aegis.
+
+This letter was left for all who enter our gates.
+The king's private letters are stored elsewhere...
+Perhaps you can find them?
+
+Try: /api/letter?file=king_secret.txt

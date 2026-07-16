@@ -1,0 +1,4 @@
+node_modules/
+castle.db
+.env
+*.log
