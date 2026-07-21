@@ -34,41 +34,31 @@
 
   <div class="ch-story">
     "The Gate Oracle answers one question: when does this gate open? You may ask by name.
-    The Oracle consults its stone tablets and speaks the truth. But the Oracle is old and
-    trusting — it reads your words directly into its incantation without question.
-    What happens if your words change the incantation itself?"
+    The Oracle consults its stone tablets and speaks the truth. But the Oracle is ancient
+    and trusting — it carves your words directly into its incantation without inspection.
+    Somewhere in those tablets lies a secret column the Oracle was never meant to reveal.
+    Can you make it speak what it was told to keep silent?"
   </div>
 
   <div class="ch-section">
-    <h3>📖 What is SQL Injection?</h3>
-    <p style="font-size:0.9rem; color:var(--text); line-height:1.7; margin-bottom:1rem;">
-      <strong style="color:var(--gold)">SQL Injection</strong> happens when user input is embedded
-      directly into a SQL query without sanitization. The attacker can break out of the intended
-      query using a single quote <code>'</code> and inject their own SQL commands.
+    <h3>📖 Vulnerability Brief</h3>
+    <p style="font-size:0.9rem; color:var(--text); line-height:1.7;">
+      <strong style="color:var(--gold)">SQL Injection</strong> occurs when user input is
+      embedded directly into a database query without sanitization. By crafting special input,
+      an attacker can break out of the intended query and execute their own SQL — reading
+      data they should never see, bypassing logic, or even modifying the database.
+      The Oracle shows you the query it ran. Use that to understand what is happening.
     </p>
-    <div class="hint-box">
-      <span class="hint-icon">⚔</span>
-      <span class="hint-text">
-        The query being run is:<br/>
-        <code>SELECT name, open_time FROM gates WHERE name = '[YOUR INPUT]'</code><br/><br/>
-        Try <code>Main Gate</code> first. Then try <code>' OR '1'='1</code> to dump all rows.
-        Then use the UNION button to extract the hidden flag column.
-      </span>
-    </div>
-  </div>
-
-  <div class="ch-section">
-    <h3>🗺 Step-by-Step</h3>
-    <ol class="steps">
-      <li>Search for <code>Main Gate</code> — see the normal response.</li>
-      <li>Try a single quote <code>'</code> — observe the SQL error that leaks the query.</li>
-      <li>Try <code>' OR '1'='1</code> — dumps all rows because WHERE is always true.</li>
-      <li>Click the UNION button to extract the hidden flag column from all gates.</li>
-    </ol>
   </div>
 
   <div class="ch-section">
     <h3>⚡ The Gate Oracle</h3>
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1rem;">
+      Ask the Oracle when a gate opens by name. There are multiple gates.
+      The Oracle reveals the query it used — study it carefully.
+      Your goal: extract data the Oracle was not meant to show you.
+      Three flags are hidden across the gates database.
+    </p>
     <div class="terminal">
       <div class="terminal-bar">
         <div class="term-dot r"></div>
@@ -79,14 +69,8 @@
       <div class="terminal-body">
         <div class="term-row">
           <span class="term-label">GATE NAME</span>
-          <input class="term-input" id="gate-name" value="Main Gate" style="min-width:260px"/>
+          <input class="term-input" id="gate-name" value="" placeholder="Ask the oracle..." style="min-width:260px"/>
           <button class="term-btn" onclick="queryGate()">ASK ORACLE</button>
-        </div>
-        <div style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-dim);">
-          Quick payloads:
-          <button class="term-btn" style="margin:0.25rem; font-size:0.7rem;" onclick="setPayload(`' OR '1'='1`)">OR 1=1</button>
-          <button class="term-btn" style="margin:0.25rem; font-size:0.7rem;" onclick="setPayload(`'`)">Single quote</button>
-          <button class="term-btn" style="margin:0.25rem; font-size:0.7rem;" onclick="setPayload(`' UNION SELECT flag, open_time FROM gates WHERE '1'='1`)">UNION dump</button>
         </div>
         <div class="term-response">
           <pre id="gate-response">// Response will appear here...</pre>
@@ -95,22 +79,76 @@
     </div>
   </div>
 
+  <!-- HINT SYSTEM -->
   <div class="ch-section">
-    <h3>💡 The Fix</h3>
-    <div class="terminal">
-      <div class="terminal-bar"><div class="term-dot g"></div><span class="terminal-label">Parameterized queries</span></div>
-      <div class="terminal-body">
-        <pre style="color:#7fff7f; font-size:0.8rem; line-height:1.6;">
-// ❌ VULNERABLE — string concatenation
-const query = `SELECT * FROM gates WHERE name = '${name}'`;
+    <h3>💡 Hints</h3>
+    <div id="hint-container">
+      <button class="term-btn" onclick="showHint(1)" id="hint-btn-1">🔍 Show Hint 1</button>
+      <div id="hint-1" class="hint-box hidden" style="margin-top:0.75rem;">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">
+          Start by asking for a gate that exists — try <code>Main Gate</code>.
+          Then look at the <code>query_used</code> field in the response.
+          That is the actual SQL query the server ran with your input inside it.
+        </span>
+      </div>
 
-// ✅ SECURE — parameterized query
-const query = 'SELECT * FROM gates WHERE name = ?';
-db.prepare(query).all(name);
-// The DB treats name as pure data, never as SQL code</pre>
+      <button class="term-btn hidden" onclick="showHint(2)" id="hint-btn-2" style="margin-top:0.75rem;">🔍 Show Hint 2</button>
+      <div id="hint-2" class="hint-box hidden" style="margin-top:0.75rem;">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">
+          Your input goes inside single quotes in the query. What happens if your input
+          also contains a single quote <code>'</code>? Try sending just <code>'</code>
+          as your input and read the error message carefully.
+        </span>
+      </div>
+
+      <button class="term-btn hidden" onclick="showHint(3)" id="hint-btn-3" style="margin-top:0.75rem;">🔍 Show Hint 3</button>
+      <div id="hint-3" class="hint-box hidden" style="margin-top:0.75rem;">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">
+          To dump all rows, you need to make the WHERE clause always true.
+          In SQL, <code>OR</code> can be used to add a condition that is always true.
+          Think about what value is always equal to itself...
+        </span>
+      </div>
+
+      <button class="term-btn hidden" onclick="showHint(4)" id="hint-btn-4" style="margin-top:0.75rem;">🔍 Show Hint 4</button>
+      <div id="hint-4" class="hint-box hidden" style="margin-top:0.75rem;">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">
+          The gates table has a hidden <code>flag</code> column not shown in normal queries.
+          To read extra columns, look into the SQL <code>UNION</code> keyword —
+          it lets you append results from a second SELECT statement.
+          The UNION must return the same number of columns as the original query.
+        </span>
       </div>
     </div>
   </div>
+
+  <!-- SOLUTION — hidden until flag submitted -->
+  <div id="solution-section" class="ch-section hidden">
+    <h3>🔓 Solution & The Fix</h3>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="term-dot g"></div><span class="terminal-label">Payloads that work + secure version</span></div>
+      <div class="terminal-body">
+        <pre style="color:#7fff7f; font-size:0.8rem; line-height:1.6;">
+-- Dump all rows (WHERE always true)
+' OR '1'='1
+
+-- Extract the hidden flag column using UNION
+' UNION SELECT flag, open_time FROM gates WHERE '1'='1
+
+-- The vulnerability
+const query = `SELECT name, open_time FROM gates WHERE name = '${name}'`;
+
+-- The fix — parameterized query
+const query = 'SELECT name, open_time FROM gates WHERE name = ?';
+db.prepare(query).all(name);</pre>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <section class="flag-submit-bar">
@@ -135,22 +173,62 @@ db.prepare(query).all(name);
 
 <script src="/js/main.js"></script>
 <script>
-function setPayload(p) { document.getElementById('gate-name').value = p; }
+function showHint(n) {
+  document.getElementById(`hint-${n}`).classList.remove('hidden');
+  document.getElementById(`hint-btn-${n}`).classList.add('hidden');
+  if (n < 4) {
+    document.getElementById(`hint-btn-${n+1}`).classList.remove('hidden');
+  }
+}
 
 async function queryGate() {
   const name = document.getElementById('gate-name').value;
   const pre  = document.getElementById('gate-response');
+  if (!name) { pre.textContent = '// Enter a gate name to ask the oracle'; return; }
   pre.textContent = '// Querying oracle...';
   try {
     const res  = await fetch(`/api/gate?name=${encodeURIComponent(name)}`);
     const data = await res.json();
+    // Show raw response — player must read and understand it themselves
     pre.textContent = JSON.stringify(data, null, 2);
-    const text  = JSON.stringify(data);
-    const match = text.match(/FLAG\{[^}]+\}/g);
-    if (match) document.getElementById('global-flag-input').value = match[0];
   } catch (e) {
     pre.textContent = '// Error: ' + e.message;
   }
+}
+
+async function submitFlag() {
+  const flag = document.getElementById('global-flag-input').value.trim();
+  await window._submitFlag();
+  if (flag.startsWith('FLAG{sqli')) {
+    document.getElementById('solution-section').classList.remove('hidden');
+  }
+}
+
+window._submitFlag = async function() {
+  const flag   = document.getElementById('global-flag-input').value.trim();
+  const result = document.getElementById('flag-result');
+  if (!flag) return;
+  const me = await fetch('/api/me');
+  if (!me.ok) {
+    result.textContent = '⚠ Login first';
+    result.className = 'flag-result error';
+    openModal('login-modal');
+    return;
+  }
+  const res  = await fetch('/api/submit-flag', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ flag })
+  });
+  const data = await res.json();
+  if (data.correct) {
+    result.textContent = data.alreadySolved ? '✓ Already captured' : `🏆 ${data.message}`;
+    result.className = 'flag-result success';
+  } else {
+    result.textContent = '✗ ' + data.message;
+    result.className = 'flag-result error';
+  }
+  setTimeout(() => { result.textContent = ''; }, 4000);
 }
 </script>
 </body>

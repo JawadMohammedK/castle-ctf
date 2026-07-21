@@ -35,39 +35,27 @@
   <div class="ch-story">
     "The castle's archivist stores a personal scroll for every inhabitant — their deepest secrets,
     their hidden allegiances. Each scroll is retrieved by a simple number: the inhabitant's ID.
-    You have been given access to your own scroll as a peasant (id=4). But the archivist never
-    checks who is asking — only what number they provide..."
+    You have been granted access to the castle as a peasant. The archivist will hand you your scroll.
+    But what about the scrolls of others? The archivist is old, and trusting, and never questions
+    who is asking — only what number they provide."
   </div>
 
   <div class="ch-section">
-    <h3>📖 What is IDOR?</h3>
-    <p style="font-size:0.9rem; color:var(--text); line-height:1.7; margin-bottom:1rem;">
-      <strong style="color:var(--gold)">Insecure Direct Object Reference (IDOR)</strong> happens when
-      an application uses a user-supplied value (like an ID in the URL) to directly access data,
-      without checking whether the logged-in user is actually authorized to access that object.
+    <h3>📖 Vulnerability Brief</h3>
+    <p style="font-size:0.9rem; color:var(--text); line-height:1.7;">
+      <strong style="color:var(--gold)">Insecure Direct Object Reference (IDOR)</strong> occurs
+      when an application exposes internal object identifiers — like database IDs — directly to
+      the user, without verifying whether that user is authorized to access the referenced object.
+      Your goal is to access data that does not belong to you.
     </p>
-    <div class="hint-box">
-      <span class="hint-icon">⚔</span>
-      <span class="hint-text">
-        Your mission: your scroll is at <code>?id=4</code>. Change the ID to
-        <code>1</code>, <code>2</code>, and <code>3</code> to access other users' scrolls.
-        Each one contains a FLAG.
-      </span>
-    </div>
-  </div>
-
-  <div class="ch-section">
-    <h3>🗺 Step-by-Step</h3>
-    <ol class="steps">
-      <li>Fetch your own scroll at <code>?id=4</code> — see what a normal response looks like.</li>
-      <li>Change the ID to <code>1</code>, <code>2</code>, and <code>3</code>.</li>
-      <li>Each scroll contains a FLAG — copy it and submit it below.</li>
-      <li>Notice how the server never asks who you are, only what ID you want.</li>
-    </ol>
   </div>
 
   <div class="ch-section">
     <h3>⚡ The Scroll Reader</h3>
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1rem;">
+      You are logged into the castle as a peasant. The endpoint below fetches a scroll by ID.
+      Your task: find scrolls that do not belong to you and capture the flags within them.
+    </p>
     <div class="terminal">
       <div class="terminal-bar">
         <div class="term-dot r"></div>
@@ -78,7 +66,7 @@
       <div class="terminal-body">
         <div class="term-row">
           <span class="term-label">USER ID</span>
-          <input class="term-input" id="scroll-id" value="4" type="number" min="1" max="10" style="max-width:100px"/>
+          <input class="term-input" id="scroll-id" value="" type="number" min="1" max="99" placeholder="?" style="max-width:100px"/>
           <button class="term-btn" onclick="fetchScroll()">FETCH SCROLL</button>
         </div>
         <div class="term-response">
@@ -88,28 +76,54 @@
     </div>
   </div>
 
+  <!-- HINT SYSTEM -->
   <div class="ch-section">
-    <h3>💡 The Fix</h3>
+    <h3>💡 Hints</h3>
+    <div id="hint-container">
+      <button class="term-btn" onclick="showHint(1)" id="hint-btn-1">🔍 Show Hint 1</button>
+      <div id="hint-1" class="hint-box hidden" style="margin-top:0.75rem;">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">Look at the URL parameter being sent to the server. What happens if you change it?</span>
+      </div>
+
+      <button class="term-btn hidden" onclick="showHint(2)" id="hint-btn-2" style="margin-top:0.75rem;">🔍 Show Hint 2</button>
+      <div id="hint-2" class="hint-box hidden" style="margin-top:0.75rem;">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">The castle has multiple inhabitants. IDs are sequential integers starting from 1. Try different numbers.</span>
+      </div>
+
+      <button class="term-btn hidden" onclick="showHint(3)" id="hint-btn-3" style="margin-top:0.75rem;">🔍 Show Hint 3</button>
+      <div id="hint-3" class="hint-box hidden" style="margin-top:0.75rem;">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">There are 4 inhabitants in the castle. One of them is a king. Try IDs 1 through 4 and look carefully at the response fields.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOLUTION — hidden until flag submitted -->
+  <div id="solution-section" class="ch-section hidden">
+    <h3>🔓 Solution & The Fix</h3>
     <div class="terminal">
-      <div class="terminal-bar"><div class="term-dot g"></div><span class="terminal-label">Secure version</span></div>
+      <div class="terminal-bar"><div class="term-dot g"></div><span class="terminal-label">How it works + the secure version</span></div>
       <div class="terminal-body">
         <pre style="color:#7fff7f; font-size:0.8rem; line-height:1.6;">
-// ❌ VULNERABLE — trusts user input directly
+// The vulnerability — no ownership check
 app.get('/api/scroll', (req, res) => {
-  const id = req.query.id;  // user controls this!
+  const id = req.query.id;  // user controls this directly
   const user = db.get('SELECT * FROM users WHERE id = ?', id);
-  res.json(user);
+  res.json(user); // returns ANY user's data
 });
 
-// ✅ SECURE — always use the session user id
+// The fix — always use the session
 app.get('/api/scroll', (req, res) => {
   const id = req.session.user.id; // server controls this
   const user = db.get('SELECT * FROM users WHERE id = ?', id);
-  res.json(user);
+  res.json(user); // only ever returns YOUR data
 });</pre>
       </div>
     </div>
   </div>
+
 </main>
 
 <section class="flag-submit-bar">
@@ -135,19 +149,39 @@ app.get('/api/scroll', (req, res) => {
 
 <script src="/js/main.js"></script>
 <script>
+let hintsShown = 0;
+
+function showHint(n) {
+  document.getElementById(`hint-${n}`).classList.remove('hidden');
+  document.getElementById(`hint-btn-${n}`).classList.add('hidden');
+  if (n < 3) {
+    document.getElementById(`hint-btn-${n+1}`).classList.remove('hidden');
+  }
+}
+
 async function fetchScroll() {
   const id  = document.getElementById('scroll-id').value;
   const pre = document.getElementById('scroll-response');
+  if (!id) { pre.textContent = '// Enter an ID to fetch'; return; }
   pre.textContent = '// Fetching...';
   try {
     const res  = await fetch(`/api/scroll?id=${id}`);
     const data = await res.json();
+    // Don't auto-fill the flag — make them find and copy it themselves
     pre.textContent = JSON.stringify(data, null, 2);
-    if (data.secret_scroll && data.secret_scroll.startsWith('FLAG{')) {
-      document.getElementById('global-flag-input').value = data.secret_scroll;
-    }
   } catch (e) {
     pre.textContent = '// Error: ' + e.message;
+  }
+}
+
+// Override submitFlag to reveal solution on correct flag
+const _originalSubmit = submitFlag;
+async function submitFlag() {
+  const flag = document.getElementById('global-flag-input').value.trim();
+  await _originalSubmit();
+  // Check if this flag belongs to ch1 — reveal solution
+  if (flag.startsWith('FLAG{idor')) {
+    document.getElementById('solution-section').classList.remove('hidden');
   }
 }
 </script>
